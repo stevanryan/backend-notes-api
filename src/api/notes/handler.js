@@ -1,6 +1,16 @@
 class NotesHandler {
   constructor(service) {
     this._service = service; // init attribute.
+
+    // Melakukan binding function.
+    // Dilakukan binding supaya mengikat "this" tetap bernilai instance class NotesHandler.
+    // Ketika tidak dilakukan binding, maka keyword "this" mengacu pada
+    // objek baru yang dibuat, bukan NotesHandler.
+    this.postNoteHandler = this.postNoteHandler.bind(this);
+    this.getNotesHandler = this.getNotesHandler.bind(this);
+    this.getNoteByIdHandler = this.getNoteByIdHandler.bind(this);
+    this.putNoteByIdHandler = this.putNoteByIdHandler.bind(this);
+    this.deleteNoteByIdHandler = this.deleteNoteByIdHandler.bind(this);
   }
 
   postNoteHandler(request, h) {
