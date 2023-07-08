@@ -1,6 +1,7 @@
 class NotesHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service; // init attribute.
+    this._validator = validator; // validator attribute.
 
     // Melakukan binding function.
     // Dilakukan binding supaya mengikat "this" tetap bernilai instance class NotesHandler.
@@ -15,6 +16,9 @@ class NotesHandler {
 
   postNoteHandler(request, h) {
     try {
+      // Validasi data input.
+      this._validator.validateNotePayload(request.payload);
+
       const { title = 'untitled', body, tags } = request.payload;
 
       const noteId = this._service.addNote({ title, body, tags });
@@ -75,15 +79,15 @@ class NotesHandler {
 
   putNoteByIdHandler(request, h) {
     try {
+      // Validasi data input.
+      this._validator.validateNotePayload(request.payload);
+
       const { id } = request.params;
-      const note = this._service.editNoteById(id, request.payload);
+      this._service.editNoteById(id, request.payload);
 
       return {
         status: 'success',
         message: 'Catatan berhasil diperbarui',
-        data: {
-          note,
-        },
       };
     } catch (error) {
       const response = h.response({
