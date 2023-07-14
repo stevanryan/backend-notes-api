@@ -3,6 +3,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
+const AuthenticationError = require('../../exceptions/AuthenticationError');
 
 class UsersService {
   constructor() {
@@ -59,6 +60,31 @@ class UsersService {
     }
 
     return userResult.rows[0];
+  }
+
+  // Digunakan untuk verifikasi kredensial dari user.
+  async verifyUserCredential(username, password) {
+    const query = {
+      text: 'SELECT id, password FROM users WHERE username = $1',
+      values: [username],
+    };
+
+    const userResult = await this._pool.query(query);
+
+    if (!userResult.rows.length) {
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
+    }
+
+    // Mendapatkan id dan password dari hasil query.
+    const { id, password: hashedPassword } = userResult.rows[0];
+
+    // Menggunakan method compare untuk mendapatkan boolean hasil dari komparasi password.
+    const match = await bcrypt.compare(password, hashedPassword);
+    if (!match) {
+      throw new AuthenticationError('Kredensial yang Anda berikan salah');
+    }
+
+    return id;
   }
 }
 
