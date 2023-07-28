@@ -1,8 +1,18 @@
 // Mengimport .env dan menjalankan konfigurasi.
 require('dotenv').config();
 
+// hapi.
 const Hapi = require('@hapi/hapi');
+
+// hapi inert to serve requests using files
+// digunakan untuk melayani request berbentuk file serta melayani permintaan berbasis direktori.
+const Inert = require('@hapi/inert');
+
+// jwt.
 const Jwt = require('@hapi/jwt');
+
+// directory path.
+const path = require('path');
 
 // notes.
 const notes = require('./api/notes');
@@ -30,11 +40,19 @@ const _exports = require('./api/exports');
 const ProducerService = require('./service/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
 
+// uploads.
+const uploads = require('./api/uploads');
+const StorageService = require('./service/storage/StorageService');
+const UploadsValidator = require('./validator/uploads');
+
 const init = async () => {
   const collaborationsService = new CollaborationsService();
   const notesService = new NotesService(collaborationsService);
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
+  // __dirname berisi path lengkap dari direktori atau folder yang sedang dibuka.
+  // secara otomatis path menyesuaikan walaupun folder project dipindah melalui file explorer.
+  const storageService = new StorageService(path.resolve(__dirname, 'api/uploads/file/images'));
 
   const server = Hapi.server({
     port: process.env.PORT, // Diambil dari .env
@@ -50,6 +68,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert,
     },
   ]);
 
@@ -108,6 +129,13 @@ const init = async () => {
       options: {
         service: ProducerService,
         validator: ExportsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: storageService,
+        validator: UploadsValidator,
       },
     },
   ]);
