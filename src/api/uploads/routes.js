@@ -15,12 +15,12 @@ const routes = (handler) => [
   },
   {
     method: 'GET',
-    path: '/upload/{param*}',
+    path: '/upload/images/{param*}',
     // Bila ada permintaan masuk, maka akan dilayani oleh berkas statis
     // yang berada pada folder file.
     handler: {
       directory: {
-        path: path.resolve(__dirname, 'file'),
+        path: path.resolve(__dirname, 'file/images'),
       },
     },
   },
